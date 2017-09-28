@@ -1,0 +1,62 @@
+\section{Details of LGPC posterior \label{AppendixB}}
+
+Joint distribution of LGPC (Figure \ref{fig:lgpc}) can be given by,
+ 
+$$p(L,Y, l, B, W, U, \sigma^2,\phi) = p(W)p(B)p(L \mid l)p(l \mid B, W, U)p(Y \mid U, \phi, \sigma^2)p(U)p(\phi)$$
+
+The data likelihood can be given as, 
+
+\begin{equation}
+p(L,Y) = \mathlarger{\int} p(W)p(B)p(L \mid l)p(l \mid B, W, U)p(Y \mid U, \phi, \sigma^2)p(U)p(\phi) dW dB dU d\phi dl
+\label{eqn:lgpc_likelihood}
+\end{equation}
+
+
+Now We introduce a factorized  variational distribution $q(W,B,U, l, \phi)$ to approximate the posterior $p(W,B,U , l , \phi \mid Y, L)$, i.e,
+\begin{equation}
+  $p(W,B,U, l \mid Y, L)$ \approx $q(W,B,u, l)$
+  \approx q(W)q(B)q(U)q(\phi)q(l)
+\end{equation}
+
+Additionally to make the inference scalable, a sparse approximation $\hat{U}$ is put in place of $U$ such that $q(U) \approx p(U \mid \hat{U}) q(\hat{U})$. This further factorizes the variational distributoin as,
+\begin{equation}
+    q(W,B,U,\phi, l) \approx q(W)q(B)p(U \mid \hat{U})q(\hat{U})q(\phi)q(l)
+\end{equation}
+
+Now we use this to rewrite the likelihood equation \ref{eqn:lgpc_likelihood},
+\begin{equation}
+\mathbb{L}(L,Y) = \mathlarger{\int} q(W)q(B)p(U \mid \hat{U})q(\hat{U})q(\phi) \log \frac{p(W)p(B)p(L \mid l)p(l \mid B, W, U)p(Y \mid U, \phi, \sigma^2)p(\hat{U})p(\phi)}{q(W)q(B)q(\hat{U})q(\phi)q(l)} dW dB d\hat{U} d\phi dl
+\label{eqn:lgpc_likelihood}
+\end{equation}
+The update for $\hat{U}$ is derived by rewriting the likelihood equation as, 
+\begin{equation}
+\mathbb{L}(L,Y) = \mathlarger{\int} q(\hat{U}) \log \frac{\bar{p}(L,Y \mid \hat{U})p(\hat{U})}{q(\hat{U})}  d\hat{U} 
+\label{eqn:lgpc_likelihood_reWrtn}
+\end{equation}
+and, 
+\begin{equation}
+log \bar{p}(L,Y \mid \hat{U}) = \mathlarger{\int} q(W)q(B)p(U \mid \hat{U})q(\phi) \log \frac{p(W)p(B)p(L \mid l)p(l)p(l \mid B, W, U)p(Y \mid U, \phi, \sigma^2)p(\phi)}{q(W)q(B)q(\phi)q(l)} dW dB d\hat{U} d\phi dl
+\end{equation}
+
+Separating log and KL divergence terms,
+
+\begin{equation}
+= \mathlarger{\mathbb{E}[ log \mathcal{N}(l \mid B, W, U) + log \mathcal{N}(Y \mid U, \phi, \sigma^2) ]_{W,B,l,\phi} } - KL(\phi,W,B,l) 
+\end{equation}
+
+Here $KL(\phi,W,B,l)$ represent the KL divergence between their true and posterior approximations. 
+Expanding the terms inside the expectations and rearranging them we obtain, 
+\begin{equation}
+log  \bar{p}(L,Y \mid \hat{U}) = \mathlarger{\int q(W)q(B)p(U \mid \hat{U})q(\phi) \log   \frac{p(W)p(B)p(L \mid l)p(l)p(l \mid B, W, U)p(Y \mid U, \phi, \sigma^2)p(\phi)}{q(W)q(B)q(\phi)q(l)} dW dB d\hat{U} d\phi dl
+\end{equation}
+
+Which after expanding the normal and rearranging few terms can be written as:
+
+\begin{equation}
+ log  \bar{p}(L,Y \mid \hat{U}) = log \mathcal{N}(F_{u}^{-1}[\mathbb{E}[W]\mathbb{E}[l]\sigma^2 + Y\mathbb{E}[\phi] - \mathbb{E}[W]\mathbb{E}[B]\sigma^2] \mid \mathbb{E}[U]^T, F_{u}^{-1}) - \frac{Tr}{2}[Cov(L|l, l) + Cov(U|\hat{U}\mathbb{E}[W^TW]) + Cov(U|\hat{U})\mathbb{E}[\phi^T\phi] + Cov(B) ]
+\end{equation}
+
+additionally we can ignore $p(L \mid l)$ in expectations since it will always be a constant.   
+
+
+

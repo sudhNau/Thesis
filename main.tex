@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\title{Variational Inference on SLFM}
+\author{nautiyal.sudhanshu }
+\date{July 2016}
+
+\begin{document}
+
+\maketitle
+
+\section{GP based factor Models}
+
+One way to achieve temporal structures within factor models is by putting GP priors over the factors. This lets us specify the relationship between latent values of a factor with the help of covariance functions. These methods are popular in cases where observations correspond to some varying phenomenon like time series [Neural paper] and/or locations [luttinen’s paper]. Moreover, GP based LVMs have also been used in a multiple response setting [Seeger] where GP were used to model the dependencies between response variables. These are called semi-parametric models due to them being a combination of Non-parametric properties of GP and parametric linear mixing of factors. 
+The model is very similar to the standard factor model described in previous section (See figure 4.1) with the distinction that here latent factors are assumed to be GP, indexed through a common index. 
+
+As shown in figure 3 their model considered relationship among C components of response variables Y as the linear mixing of P conditionally independent gaussian distributed latent random variables. These variables are indexed through a common index and hence constitute gaussian processes. Learning non parametric gaussian process alongside parametric linear mixing is the reason to call it a ‘semi-parametric’ model. Also note that, in the settings when P < C the model becomes very close to factor analysis scenario explained in section 3 however, sharing gaussian processes among response variables make it much more expressive than models presented in [examples?]  
+For computational tractability of the model, authors used IVM framework following the work of Neila et al.[IVM framework]  in their derivation of posterior. However, we here present a variantional inference based solution to SLFM model, since it will help us in developing a multi-trial method later. 
+
+\subsection{Variational inference for SLFM}
+
+The model is shown in figure 3 and can be expressed as, $${Y=\phi u + \sigma^2I}$$ where ${u \in R^{P \times N}}$ latent variables get mixed through matrix , ${\phi \in R^{C \times P},}$ resulting in  ${Y \in R^{C \times N}}$.
+
+A GP prior on latent variables $ u_p \in GP(0,K^p)$ where $K^p$ is the covariance kernel for that particular Gaussian process and a Gaussian prior $N(0,I)$ is put over $\phi$ 
+
+We approximate the posterior distribution as $ q(\phi,u,\hat{u})$ where  $p(\hat{u_p})$ is the distribution through inducing points and also has a GP prior. Furthermore we assume this sparse approximation of posterior to factorizes as: $${q(\phi,u,\hat{u}) = q(\phi)\prod_{p=1}^{P}p(u_p|\hat{u_p})q(u_p)}$$
+
+Through this sparse approximation we can calculate marginal likelihood as:
+
+$${L(Y|X) = \int p(Y|\hat{u},\phi) p(\phi,\hat{u},u) d\phi du d\hat{u}}$$
+
+Following a variational inference scheme as outlined in section 3, optimal distributions that maximize that likelihood can be found as :
+
+For $\hat{u_p}$ optimal distribution details of which can be found in Appendix 1
+
+$${q(\hat{u}_p) \approx N(\Sigma_{p}^{-1}K_{n}^{-1}K_{Nn}z_p,\Sigma_{p}^{-1})}$$
+where $${\Sigma_{p} = K_{n}^{-1} + \frac{1}{\sigma^2}K_{n}^{-1}K_{nN}S_pK_{Nn}K_{n}^{-1}}$$
+
+Now, we know that, ${p(u_p) = \int p(u|\hat{u})p(\hat{u})d\hat{u}}$ \\
+Through some mathematical manipulation we can find, 
+
+
+
+Similarly $\hat{\phi}$ can be found as, 
+
+$${\phi = N(\Sigma_{\phi}^{-1}V_{\phi}y<U>^T, \Sigma{f})}$$
+where $${\Sigma_{\phi} = (V_{\phi}^{-1} + I )^-1}$$
+and $${V_{\phi} = <u><u>^T\sigma^2}$$
+Now since , ${p(u_p) = \int p(u|\hat{u})p(\hat{u})d\hat{u}}$ \\
+
+
+
+\section{Appendix 1}
+
+
+$${ q(\phi,u, \hat{u}) = q(\phi)\prod_{p=1}^{P}p(u|\hat{u_p})q(\hat{u_p}) }$$
+
+
+${ L(u_p) = \int q(\hat{u_p}) log \frac{\bar{p}(Y|\phi,\hat{u_p})p(\hat{u_p})}{q(u_p)} d\hat{u_p}}$
+
+where ${\bar{p}(Y|\phi,\hat{u_p}) = log N(F_{p}^{-1}z_{p}|{<\hat{u}_{p:}>}_{u_p|\hat{u}_p}, F_{p}^{-1})}$
+
+
+
+Introducing sparse variational approximations and taking log both sides this can be written as,
+
+$${L(Y|X) = \int q(\phi) \prod_{p=1}^{P}{p(u_p|\hat{u_p})q(\hat{u}_p)} \log \frac{p(Y|\hat{u},\phi) p(\phi)\prod_{p=1}^{P}p(\hat{u_p})}{q(\phi)\prod_{p=1}^{P}q(\hat{u_p})}  d\phi d\hat{u}}$$
+
+$${L(\hat{u}_p) = \int q(\hat{u}_p) log \frac{\bar{p}(Y|\phi,\hat{u}_p)p(\hat{u}_p)}{\hat{u}_p}}$$
+
+where,
+
+$${\log \bar{p}(Y|\phi,\hat{u}_p) = \int q(\phi) (\prod_{i=1}^{P\backslash  p}{p(u_i|\hat{u_i})q(u_i)})p(u_p|\hat{u_p}) \log p(Y|\hat{u},\phi) d\phi d\hat{u}_{1....P\p}  - \sum_{i=1}^{P \backslash p}KL(q(\hat{u_i}||p(\hat{u_i}))} - KL(q(\phi)||p(\phi)  }$$
+Factorizing Y over C's,\\
+
+${ = \sum_{c}^{C} <log(Y_c|\phi_c,u)>_{\phi,p_{1..P\backslash p},u_p|\hat{u}_p}  - KLs}$
+
+${= \log N ({S}_{p}^{-1}z_p| K_{Nn}K_{n}^{-1}\hat{u}_p, K_{N} - K_{Nn}K_{n}^{-1}K_{nN}) - \frac{1}{2}tr(\sum_{i}^{P}{S_i*cov(u_i|\hat{u_i}}))   - KLs}$ \\
+
+where $$z_p = \sum_{c}^{C}\mathbb{E}[\phi_{cp}](y_c - \sum_{i}^{P/p}\mathbb{E}[\phi_{ci}]\mathbb{E}[u_{ip}]),$$ \\
+and $$S_p = \sum_{c}^{C}\mathbb{E}[\phi_{cp}^2]$$
+
+
+Substituting this back in the log likelihood equation,
+
+$${L(\hat{u}_p) = \int q(\phi) \log \frac{ N ({S}_{p}^{-1}z_p| K_{Nn}K_{n}^{-1}\hat{u}_p, K_{N} - K_{Nn}K_{n}^{-1}K_{nN}) p(\hat{u}_p)}{q(u_p)}  - \frac{1}{2}tr(\sum_{i}^{P}{S_i*cov(u_i|\hat{u_i}}))   - KLs }$$
+
+Now this bound can be maximized with respect to $q(\hat{u_p})$ to find optimal variational distribution which turns out to be:
+
+$${q(\hat{u}_p) \approx N(\Sigma_{p}^{-1}K_{n}^{-1}K_{Nn}z_p,\Sigma_{p}^{-1})}$$
+where $${\Sigma_{p} = K_{n}^{-1} + \frac{1}{\sigma^2}K_{n}^{-1}K_{nN}S_pK_{Nn}K_{n}^{-1}}$$
+
+A similar lower bound can be set up for $\phi$
+
+$$L(\phi) = \int q(\phi) \log\frac{\bar{p}(Y|\phi,u)p(\phi)}{q(\phi) } d\phi $$
+
+where $${\log \bar{p}(Y|\phi,u) = \int Q(u) log \frac{p(Y|\phi,u)p(u)}{q(u)} du }$$
+$${ = \int Q(u) \log {p(Y|\phi,u)} du - KL(q(u)|| p(u)) }$$
+$${ = \log N(\phi| V_{\phi}^{-1}<u>Y^{T},V_{\phi}^{-1}\sigma^2) - }$$
+
+Now, we know that, ${p(u_p) = \int p(u|\hat{u})p(\hat{u})d\hat{u}}$ \\
+Through affine property of Gaussian 
+
+which is equivalent to $${ = \int N(u|0, K_{N}) N(K_{Nn}K_{n}^{-1}\hat{u}, A) d\hat{u}}$$
+where A = ${K_N - K_{Nn}K_{n}^{-1}K_{nN}}$
+
+This can be broken down to 
+$${ = exp\frac{-1}{2}[u^T[K_N + A^{-1}]u]} \int exp\frac{-1}{2} [-2\hat{u}^{T}K_{Nn}K_{n}^{-1}A^{-1}u + \hat{u}^{T}K_{n}^{-1}K_{nN}A^{-1}K_{Nn}K_{n}^{-1}\hat{u}] d\hat{u}}$$
+
+
+\subsection{References}
+
+\href{https://people.eecs.berkeley.edu/~jordan/papers/teh-seeger-jordan04.pdf}{[1] Original SLFM paper; Jorden et al.}
+
+\href{http://ml.sheffield.ac.uk/~neil/cgi-bin/publications/bibpage.cgi?keyName=Lawrence:ivmTech04&printAbstract=1}{[2] IVM Framework technical report; Lawrence et al.}
+
+\end{document}

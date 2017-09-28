@@ -1,0 +1,94 @@
+\section{Details of GP based factor analysis posterior inference \label{AppendixA}}
+
+In order to make the posterior computationally tractable, we introduce another distribution $\hat{u_p}$ which is evaluated over fewer values than the original $u_p$. Thus posterior distribtion $p(\phi,u,\hat{u} \mid Y)$ is approximated as a factorized distribution given by:
+$${ q(\phi,u, \hat{u}) = q(\phi)\prod_{p=1}^{P}p(u|\hat{u_p})q(\hat{u_p}) }$$
+
+
+After introducing sparse variational approximations and taking log both sides of marginal likelihood of the observations,  equation \ref{eqn:gpfa_lklihd}  can be written as, 
+\begin{equation}
+   L(Y|X) = \int q(\phi) \prod_{p=1}^{P}{p(u_p|\hat{u_p})q(\hat{u}_p)} \log \frac{p(Y|\hat{u},\phi) p(\phi)\prod_{p=1}^{P}p(\hat{u_p})}{q(\phi)\prod_{p=1}^{P}q(\hat{u_p})}  d\phi d\hat{u}
+    \label{eqn:gpfa:liklehood_complete}
+\end{equation}
+
+rewriting above equation in terms of $\hat{u_p}$,
+
+\begin{equation}
+L(\hat{u}_p) = \int q(\hat{u}_p) log \frac{\bar{p}(Y|\phi,\hat{u}_p)p(\hat{u}_p)}{\hat{u}_p}
+\label{eqn:u_pfactorized}
+\end{equation}
+where,
+\begin{multiline}
+    \begin{split}
+        \log \bar{p}(Y|\phi,\hat{u}_p) = & \int q(\phi) p(u_p \mid \hat{u_p}) \prod_{i=1}^{P\backslash  p}{p(u_i\mid\hat{u_i})q(u_i)} \log p(Y \mid \hat{u},\phi) d\phi d\hat{u}_{1....P\p} \\
+        & -\sum_{i=1}^{P \backslash p}{KL(q(\hat{u_i}\mid\mid p(\hat{u_i}))} - KL(q(\phi)\mid\mid p(\phi))
+    \end{split}
+\end{multiline}
+
+
+Now, we can factorizing Y over it's row, i.e. C's,
+
+\begin{equation}
+\log \bar{p}(Y|\phi,\hat{u}_p) = \sum_{c}^{C} <log(Y_c|\phi_c,u)>_{\phi,p_{1..P\backslash p},u_p|\hat{u}_p}  - KLs
+\end{equation}
+
+After expanding the terms and completing the square we can obtain following parameterization:
+
+\begin{equation}
+\log \bar{p}(Y|\phi,\hat{u}_p) = \log N ({S}_{p}^{-1}z_p| K_{Nn}K_{n}^{-1}\hat{u}_p, K_{N} - K_{Nn}K_{n}^{-1}K_{nN}) - \frac{1}{2}tr(\sum_{i}^{P}{S_i*cov(u_i|\hat{u_i}}))   - KLs
+\end{equation}
+where $$z_p = \sum_{c}^{C}\mathbb{E}[\phi_{cp}](y_c - \sum_{i}^{P/p}\mathbb{E}[\phi_{ci}]\mathbb{E}[u_{ip}]),$$ 
+and $$S_p = \sum_{c}^{C}\mathbb{E}[\phi_{cp}^2]$$
+
+Substituting this back in the equation \ref{eqn:u_pfactorized},
+
+\begin{multiline}
+L(\hat{u}_p) = \int q(\hat{u_p}) \log \frac{ N ({S}_{p}^{-1}z_p \mid K_{Nn}K_{n}^{-1}\hat{u}_p, K_{NN} - K_{Nn}K_{nn}^{-1}K_{nN}) p(\hat{u}_p)}{q(u_p)}  - \frac{1}{2}tr(\sum_{i}^{P}{S_i*cov(u_i\mid \hat{u_i}}))   - KLs 
+\label{eqn:up_maximized}
+\end{multiline}
+
+Above equation can be used for hyperparmater selection however to find the optimal distribution $q(\hat{u_p})$ one can discard the constant terms and use only the lower bound:
+\begin{equation}
+L(\hat{u}_p) \geq \int q(\hat{u_p}) \log \frac{ \matchal{N} ({S}_{p}^{-1}z_p \mid K_{Nn}K_{n}^{-1}\hat{u}_p, K_{NN} - K_{Nn}K_{nn}^{-1}K_{nN}) p(\hat{u}_p)}{q(u_p)}
+\label{eqn:up_variational_bound}
+\end{equation}
+
+The ELBO obtained above can be interpreted as the KL distance between variational distribution of $\hat{u_p}$ and the nominator value. This distance naturally is minimal when denominator $\hat{u_p}$ takes the value same as the nominator, i.e.
+
+\begin{equation}
+q(\hat{u}_p) \approx  \matchal{N} ({S}_{p}^{-1}z_p \mid K_{Nn}K_{n}^{-1}\hat{u}_p, K_{NN} - K_{Nn}K_{nn}^{-1}K_{nN}) p(\hat{u}_p)
+\end{equation}
+
+Rearranging terms
+\begin{equation}
+q(\hat{u}_p) \approx N(\Sigma_{p}^{-1}K_{nn}^{-1}K_{Nn}z_p,\Sigma_{p}^{-1})}$$
+where $${\Sigma_{p} = K_{n}^{-1} + \frac{1}{\sigma^2}K_{n}^{-1}K_{nN}S_pK_{Nn}K_{n}^{-1}
+\label{eqn:slfm_u_hat}
+\end{equation}
+
+Note: More rigorous ways to reach at identical optimal distribution using variational calculus or by reversing Jensen's equality can be found in [https://arxiv.org/pdf/1402.1412.pdf] and [Tistia 09 tech report] respectively. 
+
+Moreover,  we know that , $${q(u_p) = \int p(u_p \mid \hat{u_p})q(\hat{u_p})d\hat{u_p}}$$
+where factor $p(u_p \mid \hat{u_p})$ can be easily obtained through conditional of GP priors $u_p$ and $\hat{u_p}$. Using affine property of gaussians [Bishop pg 87-89] and equation \ref{eqn:slfm_u_hat} we can obtain,
+
+$${
+q(u_p) \approx \mathcal{N}(u_p \mid M\hat{\mu_{p}}, \Sigma_{u \mid \hat{u}}^{p}} + M\Sigma_pM^T)
+}$$
+where ${\hat{\mu_{p}}$ is the mean of GP $\hat{u_p}$, ${M = K_{Nn}K_{nn}^{-1} }$ and
+${\Sigma_{u\mid\hat{u}}^{p}} = K_{NN} - MK_{nN} }$
+
+An optimization process similar to $\hat{u_p}$ can be followed to find the lower bound with respect to $\phi$,i.e.
+
+\begin{equation}
+L(\phi) = \int q(\phi) \log\frac{\bar{p}(Y|\phi,u)p(\phi)}{q(\phi) } d\phi
+\label{eqn:phi_maximized}
+\end{equation}
+
+where $${\log \bar{p}(Y|\phi,u) = \int q(u) log \frac{p(Y|\phi,u)p(u)}{q(u)} du \\ = \int q(u) \log {p(Y|\phi,u)} du - KL(q(u)|| p(u)) }$$
+
+Variational distribution is given by, 
+
+$${q(\phi) \approx \mathcal{N}(\phi \mid y\mathbb{E}[U]^T\Sigma_{\phi}^{-1}, \Sigma_{\phi}^{-1})}$$
+where ${\Sigma_{\phi} = (V_{\phi}^{-1} + I )}$
+and ${V_{\phi} = \mathbb{E}[u]\mathbb{E}[u]^T\sigma^2}$
+
+

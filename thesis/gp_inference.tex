@@ -1,0 +1,21 @@
+\subsection{Approximate Inference in GP}[WIP]
+
+\subsubsection{Approximate Inference}
+
+In most of the cases, the solution of a Bayesian inference problem comes down to computing a posterior and a predictive posterior[BDA]. As we saw in section 2.2.5, calculating marginal data likelihood can also be significantly important for model selection and hyper-parameter optimization. 
+As explained in the first section, if X is the data and z the parameter that govern it.
+Computing posterior $p(Z|x)  = \frac{p(x|z)p(z)}{p(X)}$ where p(X) is the data likelihood and can be obtained as $p(X) = Int p(x|z)p(z)dz$. Finally prediction on a new data point $x^*$ can be obtained as
+ 	$$P(x^*|z) = Int p(x^*|z)p(z|x)dz$$		
+
+Unfortunately, in most of practical considerations like GP classification (section 2.2.7) for example integrals mentioned in inference equations above become intractable. Traditionally, MMarkov Chain Monte Carlo (MCMC) methods - part of the generic stochastic family of approximations [Bishop’s book], have been employed to achieve the full integration results in the Bayesian problems for example, [http://omega.albany.edu:8008/neal.pdf], candidate method (Chib, 1995; and see Neal, 1998), bridge sampling and path sampling (Gelman and Meng, 1998) and the closely related Annealed Importance Sampling (Neal, 2001)] etc.
+These techniques try to approximate the distribution by generating number of samples. Though MCMC guarantees to converge to the target distribution in the long run [http://www.cs.princeton.edu/courses/archive/spr06/cos598C/papers/AndrieuFreitasDoucetJordan2003.pdf: Jordan03], typically an extremely large number of samples is required to converge to accurate results.  Despite numerous advances in trying to make MCMC methods faster and efficient most of them still remain computationally prohibitive for most of the relevant models[ref?]. An extensive coverage of these stochastic techniques and their properties can be found in [BDA], similarly [Jordan 03] is a comprehensive introduction on MCMC applications from machine learning perspective. 
+
+A number of other methods called deterministic methods [Bishop06, Minka thesis] approach the same task by trying to approximate posterior distribution using analytical approximations. These include Maximum likelihood and maximum a posteriori methods which approximate entire distribution to corresponding single point estimates [Murphy , Bishop book], thereby discarding all the uncertainties information associated with it. Laplace’s method, on the other hand, approximates true distribution by a Gaussian distribution that matches the mode, first derivative and second derivative of the former [Mackay’s book]. Another family of methods include Expectation propagation [Minka’s 01 ] and Variational Bayes [Jordan et al. 98] that try to obtain a simpler distribution closest to the target distribution based on information theoretic distance metrics like KL divergence.  
+Compared to MCMC methods, deterministic methods generally aren’t able to recover the target distribution exactly. However their computational efficiency and versatility makes them a very useful method in approximate inference toolbox. In the following section we describe variational bayes in more detail.
+
+\subsubsection{Variational Inference}[WIP]
+
+
+\subsubsection{Variational Infernece in GP }[WIP]
+
+\subsubsection{Sparse approximaiton in GP [WIP]}
