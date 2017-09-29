@@ -13,7 +13,18 @@ These techniques try to approximate the distribution by generating number of sam
 A number of other methods called deterministic methods [Bishop06, Minka thesis] approach the same task by trying to approximate posterior distribution using analytical approximations. These include Maximum likelihood and maximum a posteriori methods which approximate entire distribution to corresponding single point estimates [Murphy , Bishop book], thereby discarding all the uncertainties information associated with it. Laplace’s method, on the other hand, approximates true distribution by a Gaussian distribution that matches the mode, first derivative and second derivative of the former [Mackay’s book]. Another family of methods include Expectation propagation [Minka’s 01 ] and Variational Bayes [Jordan et al. 98] that try to obtain a simpler distribution closest to the target distribution based on information theoretic distance metrics like KL divergence.  
 Compared to MCMC methods, deterministic methods generally aren’t able to recover the target distribution exactly. However their computational efficiency and versatility makes them a very useful method in approximate inference toolbox. In the following section we describe variational bayes in more detail.
 
-\subsubsection{Variational Inference}[WIP]
+\subsubsection{Variational Inference[WIP]}
+
+Fundamental idea behind Variational Bayes framework [Jordan et al 99, Beal’s thesis] is to approximate an intractable or in-feasible posterior distribution by a simpler distribution through optimization. The quantification of closeness between two distributions is usually done by the Kullback-Leibler divergence [Mackay’s book], this can serve as a good optimizer during the approximation procedure. Optimal values of the approximate distribution’s parameters, also called variational parameters, are thus obtained by minimizing the KL divergence between the former and true distribution. 
+
+Following [Blei’s review],
+If q($\theta$) approximates certain posterior $p(\theta \mid x)$, KL divergence between them can be given by,
+
+\begin{eqnarray*}
+    KL(q||p) = \int q(z) \log \frac{q(z)}{p(z \mid x)}
+        = \int q(z) \log q(z) - \int q(z) \log p(z \mid x)
+\end{eqnarray*}
+
 
 
 \subsubsection{Variational Infernece in GP }[WIP]
